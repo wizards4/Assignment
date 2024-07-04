@@ -1,0 +1,177 @@
+Step 1: Solve the Maximum Path Sum Problem
+We'll begin by writing a Python function to solve the Maximum Path Sum problem for a binary tree. This function will use a recursive approach to traverse the tree and compute the maximum path sum.
+
+Step 2: Containerize the Application with Docker
+Next, we'll create a Docker container to run the application. The Dockerfile will include instructions to set up the Python environment and execute the application.
+
+Step 3: Deploy the Application on Google Cloud Platform (GCP)
+We'll deploy the containerized application on GCP using Google Kubernetes Engine (GKE). This will involve creating a Kubernetes cluster, deploying the Docker container, and setting up necessary configurations for monitoring and scaling.
+
+Step 4: Provide Documentation
+We'll create detailed documentation outlining the architecture, deployment steps, and instructions for running the application locally. This will include code snippets demonstrating key features.
+
+Step 5: Submit the Codebase
+The final step is to submit the codebase via GitHub, along with instructions for reviewing the code.
+
+Step 1: Solve the Maximum Path Sum Problem
+Here's a Python implementation of the Maximum Path Sum problem:
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def __init__(self):
+        self.maxSum = float('-inf')
+
+    def maxPathSum(self, root: TreeNode) -> int:
+        self.pathSum(root)
+        return self.maxSum
+
+    def pathSum(self, root: TreeNode) -> int:
+        if not root:
+            return 0
+        leftSum = max(0, self.pathSum(root.left))
+        rightSum = max(0, self.pathSum(root.right))
+        self.maxSum = max(self.maxSum, leftSum + rightSum + root.val)
+        return root.val + max(leftSum, rightSum)
+
+def build_tree(values):
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while i < len(values):
+        node = queue.pop(0)
+        if values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+root1 = build_tree([1, 2, 3])
+print(Solution().maxPathSum(root1)) 
+
+
+root2 = build_tree([-10, 9, 20, None, None, 15, 7])
+print(Solution().maxPathSum(root2))  
+
+Step 2: Containerize the Application with Docker
+Create a Dockerfile to containerize the application:
+
+ Use an official Python runtime as a parent image
+FROM python:3.8-slim
+
+ Set the working directory in the container
+WORKDIR /app
+
+ Copy the current directory contents into the container at /app
+COPY . /app
+
+ Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+Run the application
+CMD ["python", "app.py"]
+
+Create a requirements.txt file to specify dependencies:
+flask
+
+Create an app.py file to run the Flask application:
+from flask import Flask, request, jsonify
+from tree_solution import Solution, TreeNode
+
+app = Flask(__name__)
+
+@app.route('/max-path-sum', methods=['POST'])
+def max_path_sum():
+    data = request.json
+    root = build_tree(data['root'])
+    solution = Solution()
+    result = solution.maxPathSum(root)
+    return jsonify({'maxPathSum': result})
+
+def build_tree(values):
+    if not values:
+        return None
+    nodes = [None if val is None else TreeNode(val) for val in values]
+    kids = nodes[::-1]
+    root = kids.pop()
+    for node in nodes:
+        if node:
+            if kids: node.left = kids.pop()
+            if kids: node.right = kids.pop()
+    return root
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+Step 3: Deploy the Application on GCP
+
+1. Create a Kubernetes Cluster:
+
+gcloud container clusters create max-path-sum-cluster --num-nodes=1
+
+2. Build and Push Docker Image:
+
+docker build -t gcr.io/[PROJECT_ID]/max-path-sum:v1 .
+docker push gcr.io/[PROJECT_ID]/max-path-sum:v1
+
+3. Deploy the Application:
+
+Create a deployment.yaml file:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: max-path-sum-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: max-path-sum
+  template:
+    metadata:
+      labels:
+        app: max-path-sum
+    spec:
+      containers:
+      - name: max-path-sum
+        image: gcr.io/[PROJECT_ID]/max-path-sum:v1
+        ports:
+        - containerPort: 5000
+
+Deploy the application:
+kubectl apply -f deployment.yaml
+
+4. Expose the Application:
+
+Create a service.yaml file:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: max-path-sum-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: max-path-sum
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+
+Expose the service:
+kubectl apply -f service.yaml
+
+
+
+

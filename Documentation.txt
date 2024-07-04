@@ -1,0 +1,60 @@
+Provide Documentation
+Architecture
+The application consists of a Flask web server that processes incoming requests to compute the maximum path sum of a binary tree. The server is containerized using Docker and deployed on GCP using Kubernetes.
+
+Deployment Steps
+1. Build and Push Docker Image:
+
+docker build -t gcr.io/[PROJECT_ID]/max-path-sum:v1 .
+docker push gcr.io/[PROJECT_ID]/max-path-sum:v1
+
+2. Create Kubernetes Cluster:
+
+gcloud container clusters create max-path-sum-cluster --num-nodes=1
+
+3. Deploy the Application:
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+Running the Application Locally
+
+1. Build Docker Image:
+
+docker build -t max-path-sum .
+
+2. Run Docker Container:
+
+docker run -p 5000:5000 max-path-sum
+
+Sample Request
+Send a POST request to /max-path-sum with the binary tree data:
+
+{
+  "root": [1, 2, 3]
+}
+
+Response:
+
+{
+  "maxPathSum": 6
+}
+
+Submit the Codebase
+
+1. Initialize Git Repository:
+
+git init
+
+2. Add and Commit Files:
+
+git add .
+git commit -m "Initial commit"
+
+3. Create GitHub Repository:
+Create a repository on GitHub and push the code:
+
+git remote add origin https://github.com/[USERNAME]/max-path-sum.git
+git push -u origin master
+
+
